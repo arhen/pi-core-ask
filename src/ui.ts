@@ -50,7 +50,8 @@ export class QuestionnaireComponent implements Component {
 
 	private buildSelect(): SelectList {
 		const t = this.theme;
-		const select = new SelectList(this.itemsFor(this.questions[0]!), Math.min(8, this.questions[0]!.options.length + 2), {
+		const q = this.currentQuestion();
+		const select = new SelectList(this.itemsFor(q), Math.min(8, q.options.length + 2), {
 			selectedPrefix: (text) => t.fg("accent", text),
 			selectedText: (text) => t.fg("accent", text),
 			description: (text) => t.fg("muted", text),
@@ -59,7 +60,9 @@ export class QuestionnaireComponent implements Component {
 		});
 		select.onSelectionChange = () => this.tui.requestRender();
 		select.onCancel = () => this.finish(true);
-		select.onSelect = (item) => this.onRow(item);
+		select.onSelect = (item) => {
+			if (item) this.onRow(item); // Enter on an empty list yields null — ignore
+		};
 		return select;
 	}
 
