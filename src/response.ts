@@ -12,6 +12,7 @@ export const ERROR_DUPLICATE_QUESTION = "Error: Question text must be unique wit
 export const ERROR_TOO_FEW_OPTIONS = `Error: Each question requires at least ${MIN_OPTIONS} options`;
 export const ERROR_RESERVED_LABEL = `Error: Option label is reserved (${RESERVED_LABELS.join(", ")})`;
 export const ERROR_DUPLICATE_OPTION_LABEL = "Error: Option labels must be unique within a question";
+export const ERROR_EMPTY_LABEL = "Error: Option label must not be empty";
 
 const RESERVED_LABEL_SET: ReadonlySet<string> = new Set(RESERVED_LABELS);
 
@@ -23,8 +24,9 @@ export function validateQuestionnaire(typed: QuestionParams): ValidationResult {
 
 	const seenQuestions = new Set<string>();
 	for (const q of typed.questions) {
-		if (seenQuestions.has(q.question)) return { ok: false, error: "duplicate_question", message: ERROR_DUPLICATE_QUESTION };
-		seenQuestions.add(q.question);
+		const question = q.question.trim();
+		if (seenQuestions.has(question)) return { ok: false, error: "duplicate_question", message: ERROR_DUPLICATE_QUESTION };
+		seenQuestions.add(question);
 	}
 
 	for (const q of typed.questions) {
@@ -32,12 +34,13 @@ export function validateQuestionnaire(typed: QuestionParams): ValidationResult {
 		const seenLabels = new Set<string>();
 		for (const o of q.options) {
 			const label = o.label.trim(); // L6: compare trimmed
+			if (label.length === 0) return { ok: false, error: "invalid_label", message: ERROR_EMPTY_LABEL };
 			if (RESERVED_LABEL_SET.has(label) || label.startsWith("__type_something__")) {
 				return { ok: false, error: "reserved_label", message: ERROR_RESERVED_LABEL };
 			}
 			if (seenLabels.has(label)) return { ok: false, error: "duplicate_option_label", message: ERROR_DUPLICATE_OPTION_LABEL };
 			seenLabels.add(label);
-			if (q.multiSelect && o.preview !== undefined) {
+			if (q.multiSelect && o.preview !== undefined && o.preview.trim().length > 0) {
 				return { ok: false, error: "preview_on_multiselect", message: "Error: preview is only supported on single-select questions" };
 			}
 		}

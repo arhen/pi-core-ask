@@ -90,6 +90,7 @@ export type QuestionnaireError =
 	| "too_many_questions"
 	| "duplicate_question"
 	| "duplicate_option_label"
+	| "invalid_label"
 	| "reserved_label"
 	| "preview_on_multiselect";
 

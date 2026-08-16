@@ -83,8 +83,15 @@ export class QuestionnaireComponent implements Component {
 		}
 		if (q.multiSelect) {
 			const idx = q.options.findIndex((o) => o.label === item.value);
-			if (this.multiChecked.has(idx)) this.multiChecked.delete(idx);
-			else this.multiChecked.add(idx);
+			if (this.multiChecked.has(idx)) {
+				this.multiChecked.delete(idx);
+				// Drop the unchecked label from the saved selection so saveMulti()
+				// can't re-promote it into multiChecked (uncheck used to be a no-op).
+				const prev = this.currentAnswer();
+				if (prev?.kind === "multi") {
+					prev.selected = (prev.selected ?? []).filter((label) => label !== item.value);
+				}
+			} else this.multiChecked.add(idx);
 			this.saveMulti();
 			this.tui.requestRender();
 			return;

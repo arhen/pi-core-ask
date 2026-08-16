@@ -51,8 +51,8 @@ export default function (pi: ExtensionAPI) {
 		parameters: QuestionParamsSchema,
 		executionMode: "sequential",
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-			const typed = params as unknown as QuestionParams;
-			if (!ctx.hasUI) {
+			const typed: QuestionParams = params;
+			if (ctx.mode !== "tui") {
 				return buildToolResult(ERROR_NO_UI, { answers: [], cancelled: true, error: "no_ui" });
 			}
 			const validation = validateQuestionnaire(typed);
