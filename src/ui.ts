@@ -120,6 +120,14 @@ export class QuestionnaireComponent implements Component {
 		if (!q.multiSelect) return; // single-select/custom answers are owned by onRow/commitCustom
 		const selected: string[] = [];
 		for (const idx of this.multiChecked) selected.push(q.options[idx]!.label);
+		// Keep typed custom entries (not option labels) from a previous commit.
+		const prev = this.currentAnswer();
+		if (prev?.kind === "multi") {
+			const optionLabels = new Set(q.options.map((o) => o.label));
+			for (const label of prev.selected ?? []) {
+				if (!optionLabels.has(label) && !selected.includes(label)) selected.push(label);
+			}
+		}
 		selected.sort((a, b) => q.options.findIndex((o) => o.label === a) - q.options.findIndex((o) => o.label === b));
 		this.answers[this.tab] = selected.length > 0 ? { questionIndex: this.tab, question: q.question, kind: "multi", answer: null, selected } : null;
 	}
@@ -180,6 +188,7 @@ export class QuestionnaireComponent implements Component {
 	}
 
 	handleInput(data: string): void {
+		if (this.finished) return; // stale keys after done can't mutate answers
 		if (this.customMode) {
 			// Explicit keys: Enter submits the typed answer, Esc returns to options.
 			// Intercepting here (not via Input callbacks) keeps the flow deterministic.
@@ -257,7 +266,7 @@ export class QuestionnaireComponent implements Component {
 			lines.push(pad(row(this.theme.fg("dim", "Enter to submit custom answer · Esc back to options"))));
 		} else {
 			const selected = this.select.getSelectedItem();
-			for (const line of this.select.render(boxWidth - 2)) {
+			for (const line of this.select.render(boxWidth - 4)) {
 				lines.push(pad(row(line)));
 			}
 			// multi-select check state
