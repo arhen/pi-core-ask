@@ -29,11 +29,6 @@ export class QuestionnaireComponent implements Component {
 		this.answers = questions.map(() => null);
 		this.done = done;
 		this.select = this.buildSelect();
-		this.input.onSubmit = (value: string) => this.commitCustom(value);
-		this.input.onEscape = () => {
-			this.customMode = false;
-			this.tui.requestRender();
-		};
 	}
 
 	// ── state helpers ────────────────────────────────────────────────────
@@ -127,13 +122,27 @@ export class QuestionnaireComponent implements Component {
 		this.answers[this.tab] = selected.length > 0 ? { questionIndex: this.tab, question: q.question, kind: "multi", answer: null, selected } : null;
 	}
 
+	/** Move to another question, restoring its saved state (answers, selection, custom text). */
+	private goTo(tab: number): void {
+		if (tab < 0 || tab >= this.questions.length || tab === this.tab) return;
+		this.saveMulti();
+		this.tab = tab;
+		this.multiChecked = this.restoreChecked();
+		const saved = this.currentAnswer();
+		this.customMode = saved?.kind === "custom";
+		if (this.customMode) this.input.setValue(saved?.answer ?? "");
+		this.select = this.buildSelect();
+		// Preselect the previously chosen option, if any.
+		if (saved?.kind === "option") {
+			const idx = this.questions[tab]!.options.findIndex((o) => o.label === saved.answer);
+			if (idx >= 0) this.select.setSelectedIndex(idx);
+		}
+		this.tui.requestRender();
+	}
+
 	private advance(): void {
 		if (this.tab < this.questions.length - 1) {
-			this.tab += 1;
-			this.multiChecked = this.restoreChecked();
-			this.customMode = false;
-			this.select = this.buildSelect();
-			this.tui.requestRender();
+			this.goTo(this.tab + 1);
 			return;
 		}
 		this.finish(false);
@@ -168,12 +177,32 @@ export class QuestionnaireComponent implements Component {
 
 	handleInput(data: string): void {
 		if (this.customMode) {
+			// Explicit keys: Enter submits the typed answer, Esc returns to options.
+			// Intercepting here (not via Input callbacks) keeps the flow deterministic.
+			if (matchesKey(data, Key.enter)) {
+				this.commitCustom(this.input.getValue());
+				return;
+			}
+			if (matchesKey(data, Key.escape) || matchesKey(data, Key.ctrl("c"))) {
+				this.customMode = false;
+				this.tui.requestRender();
+				return;
+			}
 			this.input.handleInput(data);
 			this.tui.requestRender();
 			return;
 		}
 		if (matchesKey(data, Key.escape) || matchesKey(data, Key.ctrl("c"))) {
 			this.finish(true);
+			return;
+		}
+		// ← / → navigate between questions (answers are preserved per question).
+		if (matchesKey(data, Key.left)) {
+			this.goTo(this.tab - 1);
+			return;
+		}
+		if (matchesKey(data, Key.right)) {
+			this.goTo(this.tab + 1);
 			return;
 		}
 		this.select.handleInput(data);
@@ -248,7 +277,7 @@ export class QuestionnaireComponent implements Component {
 
 		lines.push(pad(bar()));
 		const multi = q.multiSelect ? "Enter toggle · Ctrl+S done · " : "Enter next · ";
-		const controls = dim(`${multi}↑↓ select · Type something. = custom · Esc cancel`);
+		const controls = dim(`${multi}←/→ prev/next · ↑↓ select · Type something. = custom · Esc cancel`);
 		lines.push(pad(row(truncateToWidth(controls, contentWidth))));
 		lines.push(pad(dim("╰" + "─".repeat(boxWidth - 2) + "╯")));
 		return lines;
