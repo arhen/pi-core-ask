@@ -19,6 +19,7 @@ export class QuestionnaireComponent implements Component {
 	private multiChecked = new Set<number>();
 	private done: (result: { answers: QuestionAnswer[]; cancelled: boolean }) => void;
 	private select: SelectList;
+	private finished = false;
 
 	constructor(
 		private readonly questions: QuestionData[],
@@ -161,6 +162,8 @@ export class QuestionnaireComponent implements Component {
 	}
 
 	private finish(cancelled: boolean): void {
+		if (this.finished) return; // first outcome wins — stale events can't flip the result
+		this.finished = true;
 		if (cancelled) {
 			this.done({ answers: [], cancelled: true });
 			return;
@@ -203,6 +206,12 @@ export class QuestionnaireComponent implements Component {
 		}
 		if (matchesKey(data, Key.right)) {
 			this.goTo(this.tab + 1);
+			return;
+		}
+		// Ctrl+S: commit the current question (required for multiSelect — Enter toggles).
+		if (matchesKey(data, Key.ctrl("s"))) {
+			this.saveMulti();
+			this.advance();
 			return;
 		}
 		this.select.handleInput(data);
