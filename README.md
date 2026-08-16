@@ -4,15 +4,17 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![pi extension](https://img.shields.io/badge/pi-extension-7c3aed)](https://github.com/earendil-works/pi)
 
-Minimalist pi questionnaire: `ask_user_question` tool with up to 4 structured questions per call — 2–4 options each, `multiSelect`, markdown `previews`, and an auto-appended "Type something." free-text row. Stateless: one tool, one dialog, no lifecycle machinery.
-
 ## Install
+
+Requires the [pi coding agent](https://github.com/earendil-works/pi) — install it first: `npm install -g @earendil-works/pi-coding-agent`.
 
 ```sh
 pi install npm:@arhen/pi-core-ask
 ```
 
 > Registers the `ask_user_question` tool. Only one extension may register it per session.
+
+Minimalist pi questionnaire: `ask_user_question` tool with up to 4 structured questions per call — 2–4 options each, `multiSelect`, markdown `previews`, and an auto-appended "Type something." free-text row. Stateless: one tool, one dialog, no lifecycle machinery.
 
 ## Tool contract
 
