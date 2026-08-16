@@ -14,7 +14,7 @@ pi install npm:@arhen/pi-core-ask
 
 > Registers the `ask_user_question` tool. Only one extension may register it per session.
 
-## Tool contract (unchanged from rpiv)
+## Tool contract
 
 - `questions` (1–4): `question`, `header` (≤16 chars), `options` (2–4 of `label` ≤60 chars / `description` / optional `preview`), `multiSelect` (default false)
 - Reserved labels rejected: `Other`, `Type something.`, `Next` — the runtime appends its own free-text row
@@ -38,7 +38,7 @@ Where to run ask frnd-chat-improvements? Active feature analyze-vision-billing e
 Enter next ↵ select → Type something. = custom ⇫ Esc cancel
 ```
 
-## What's cut (vs rpiv, 4,823 lines → ~900)
+## Design
 
 - RPC fallback (VSCode/Zed hosts), external editor, notes field
 - i18n/locales, config + guidance validation
