@@ -117,6 +117,7 @@ export class QuestionnaireComponent implements Component {
 
 	private saveMulti(): void {
 		const q = this.currentQuestion();
+		if (!q.multiSelect) return; // single-select/custom answers are owned by onRow/commitCustom
 		const selected: string[] = [];
 		for (const idx of this.multiChecked) selected.push(q.options[idx]!.label);
 		selected.sort((a, b) => q.options.findIndex((o) => o.label === a) - q.options.findIndex((o) => o.label === b));
