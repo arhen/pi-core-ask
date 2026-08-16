@@ -25,6 +25,19 @@ pi install npm:@arhen/pi-ask
 
 Boxed dialog, one question at a time: progress dots, header chip, option list (pi-tui SelectList), preview pane for focused options, "Type something." → inline input, `Enter` next / `Ctrl+S` done (multiSelect) / `Esc` cancel.
 
+![ask_user_question example](assets/ask-example.png)
+
+```
+Questions (1/3)           ● ○ ○          [Workspace]
+Where to run ask frnd-chat-improvements? Active feature analyze-vision-billing exists…
+
+→ Continue in main workspace (Re…
+  Parallel ej workspace
+  Type something.
+─────────────────────────────────────────────
+Enter next ↵ select → Type something. = custom ⇫ Esc cancel
+```
+
 ## What's cut (vs rpiv, 4,823 lines → ~900)
 
 - RPC fallback (VSCode/Zed hosts), external editor, notes field
