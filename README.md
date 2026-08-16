@@ -1,6 +1,6 @@
-# @arhen/pi-ask
+# @arhen/pi-core-ask
 
-[![npm version](https://img.shields.io/npm/v/@arhen%2Fpi-ask?color=cb3837&logo=npm)](https://www.npmjs.com/package/@arhen/pi-ask)
+[![npm version](https://img.shields.io/npm/v/@arhen%2Fpi-core-ask?color=cb3837&logo=npm)](https://www.npmjs.com/package/@arhen/pi-core-ask)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![pi extension](https://img.shields.io/badge/pi-extension-7c3aed)](https://github.com/earendil-works/pi)
 
@@ -9,10 +9,10 @@ Minimalist pi questionnaire: `ask_user_question` tool with up to 4 structured qu
 ## Install
 
 ```sh
-pi install npm:@arhen/pi-ask
+pi install npm:@arhen/pi-core-ask
 ```
 
-> Registers the `ask_user_question` tool — conflicts with `@juicesharp/rpiv-ask-user-question`. Run one at a time.
+> Registers the `ask_user_question` tool. Only one extension may register it per session.
 
 ## Tool contract (unchanged from rpiv)
 
