@@ -40,10 +40,12 @@ Enter next ↵ select → Type something. = custom ⇫ Esc cancel
 
 ## Design
 
-- RPC fallback (VSCode/Zed hosts), external editor, notes field
-- i18n/locales, config + guidance validation
-- Tab components, preview layout decider, markdown cache, key-router state machine
-- Lifecycle events (stateless by design — no session wiring needed)
+- One tool, one boxed dialog, stateless — no lifecycle events, no config, no RPC fallback, no i18n
+- Multi-question questionnaire: progress dots, `←/→` navigation (answers preserved per question), `Enter` next, `Ctrl+S` commits multiSelect, `Esc` cancels
+- Options via pi-tui SelectList; focused option's full description + optional preview render in a pane below
+- "Type something." free-text row on every question; blank submit returns to options
+- Validation: reserved labels rejected (trimmed), previews only on single-select, 2-4 options, unique questions/labels
+- Envelope: `User has answered your questions: "Q"="A".` / decline on Esc
 
 ## Development
 

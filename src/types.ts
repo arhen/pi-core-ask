@@ -17,6 +17,7 @@ export type ReservedLabel = (typeof RESERVED_LABELS)[number];
 
 export const OptionSchema = Type.Object({
 	label: Type.String({
+		minLength: 1,
 		maxLength: MAX_LABEL_LENGTH,
 		description: `MAX ${MAX_LABEL_LENGTH} CHARACTERS — hard limit, requests over the limit are rejected. The display text for this option that the user will see and select. Should be concise (1-5 words) and clearly describe the choice.`,
 	}),
@@ -34,6 +35,7 @@ export const OptionSchema = Type.Object({
 
 export const QuestionSchema = Type.Object({
 	question: Type.String({
+		minLength: 1,
 		description:
 			'The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: "Which library should we use for date formatting?" If multiSelect is true, phrase it accordingly, e.g. "Which features do you want to enable?"',
 	}),
@@ -88,7 +90,8 @@ export type QuestionnaireError =
 	| "too_many_questions"
 	| "duplicate_question"
 	| "duplicate_option_label"
-	| "reserved_label";
+	| "reserved_label"
+	| "preview_on_multiselect";
 
 export interface QuestionnaireResult {
 	answers: QuestionAnswer[];

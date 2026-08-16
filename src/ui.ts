@@ -127,15 +127,21 @@ export class QuestionnaireComponent implements Component {
 		if (!q.multiSelect) return; // single-select/custom answers are owned by onRow/commitCustom
 		const selected: string[] = [];
 		for (const idx of this.multiChecked) selected.push(q.options[idx]!.label);
-		// Keep typed custom entries (not option labels) from a previous commit.
+		// Keep typed custom entries from a previous commit; a custom that happens to
+		// equal an option label is promoted to a toggle so it can never be lost.
 		const prev = this.currentAnswer();
 		if (prev?.kind === "multi") {
-			const optionLabels = new Set(q.options.map((o) => o.label));
 			for (const label of prev.selected ?? []) {
-				if (!optionLabels.has(label) && !selected.includes(label)) selected.push(label);
+				const idx = q.options.findIndex((o) => o.label === label);
+				if (idx >= 0) this.multiChecked.add(idx);
+				else if (!selected.includes(label)) selected.push(label);
 			}
 		}
-		selected.sort((a, b) => q.options.findIndex((o) => o.label === a) - q.options.findIndex((o) => o.label === b));
+		selected.sort((a, b) => {
+			const ia = q.options.findIndex((o) => o.label === a);
+			const ib = q.options.findIndex((o) => o.label === b);
+			return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+		});
 		this.answers[this.tab] = selected.length > 0 ? { questionIndex: this.tab, question: q.question, kind: "multi", answer: null, selected } : null;
 	}
 
@@ -225,8 +231,8 @@ export class QuestionnaireComponent implements Component {
 			this.goTo(this.tab + 1);
 			return;
 		}
-		// Ctrl+S: commit the current question (required for multiSelect — Enter toggles).
-		if (matchesKey(data, Key.ctrl("s"))) {
+		// Ctrl+S: commit multiSelect questions only (single-select commits on Enter).
+		if (matchesKey(data, Key.ctrl("s")) && this.currentQuestion().multiSelect) {
 			this.saveMulti();
 			this.advance();
 			return;
@@ -278,8 +284,10 @@ export class QuestionnaireComponent implements Component {
 			}
 			// multi-select check state
 			if (q.multiSelect) {
-				const checked = [...this.multiChecked].map((i) => q.options[i]!.label).join(", ");
-				if (checked) lines.push(pad(row(this.theme.fg("success", `✓ ${checked}`))));
+				const checked = [...this.multiChecked].map((i) => q.options[i]!.label);
+				const custom = this.currentAnswer()?.kind === "multi" ? (this.currentAnswer()!.selected ?? []).filter((l) => !q.options.some((o) => o.label === l)) : [];
+				const shown = [...checked, ...custom].join(", ");
+				if (shown) lines.push(pad(row(this.theme.fg("success", `✓ ${shown}`))));
 			}
 			lines.push(pad(row("")));
 			// Pane for the focused option: full wrapped description + preview if present.
