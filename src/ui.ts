@@ -227,13 +227,20 @@ export class QuestionnaireComponent implements Component {
 				if (checked) lines.push(pad(row(this.theme.fg("success", `✓ ${checked}`))));
 			}
 			lines.push(pad(row("")));
-			// preview pane for focused option
+			// Pane for the focused option: full wrapped description + preview if present.
 			const focused = selected && selected.value !== TYPE_ROW_VALUE ? q.options.find((o) => o.label === selected.value) : undefined;
-			if (focused?.preview) {
+			if (focused) {
 				lines.push(pad(bar()));
-				lines.push(pad(row(this.theme.fg("accent", "Preview"))));
-				for (const line of focused.preview.split("\n").slice(0, 10)) {
-					lines.push(pad(row(this.theme.fg("dim", truncateToWidth(line, contentWidth - 2)))));
+				lines.push(pad(row(this.theme.fg("accent", "Description"))));
+				for (const line of wrapTextWithAnsi(focused.description, contentWidth - 2).slice(0, 8)) {
+					lines.push(pad(row(this.theme.fg("dim", line))));
+				}
+				if (focused.preview) {
+					lines.push(pad(row("")));
+					lines.push(pad(row(this.theme.fg("accent", "Preview"))));
+					for (const line of focused.preview.split("\n").slice(0, 8)) {
+						lines.push(pad(row(this.theme.fg("dim", truncateToWidth(line, contentWidth - 2)))));
+					}
 				}
 				lines.push(pad(bar()));
 			}
