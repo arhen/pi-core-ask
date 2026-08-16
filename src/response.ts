@@ -31,9 +31,13 @@ export function validateQuestionnaire(typed: QuestionParams): ValidationResult {
 		if (q.options.length < MIN_OPTIONS) return { ok: false, error: "empty_options", message: ERROR_TOO_FEW_OPTIONS };
 		const seenLabels = new Set<string>();
 		for (const o of q.options) {
-			if (RESERVED_LABEL_SET.has(o.label)) return { ok: false, error: "reserved_label", message: ERROR_RESERVED_LABEL };
-			if (seenLabels.has(o.label)) return { ok: false, error: "duplicate_option_label", message: ERROR_DUPLICATE_OPTION_LABEL };
-			seenLabels.add(o.label);
+			const label = o.label.trim(); // L6: compare trimmed
+			if (RESERVED_LABEL_SET.has(label)) return { ok: false, error: "reserved_label", message: ERROR_RESERVED_LABEL };
+			if (seenLabels.has(label)) return { ok: false, error: "duplicate_option_label", message: ERROR_DUPLICATE_OPTION_LABEL };
+			seenLabels.add(label);
+			if (q.multiSelect && o.preview !== undefined) {
+				return { ok: false, error: "reserved_label", message: "Error: preview is only supported on single-select questions" };
+			}
 		}
 	}
 

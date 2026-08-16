@@ -10,6 +10,7 @@ import { type Component, Input, Key, matchesKey, SelectList, type SelectItem, ty
 import type { QuestionAnswer, QuestionData } from "./types.ts";
 
 const TYPE_ROW_VALUE = "__type_something__";
+const isTypeRow = (v: string): boolean => v === TYPE_ROW_VALUE || v.startsWith("__type_something__");
 
 export class QuestionnaireComponent implements Component {
 	private tab = 0;
@@ -74,7 +75,7 @@ export class QuestionnaireComponent implements Component {
 
 	private onRow(item: SelectItem): void {
 		const q = this.currentQuestion();
-		if (item.value === TYPE_ROW_VALUE) {
+		if (isTypeRow(item.value)) {
 			this.customMode = true;
 			this.input.setValue("");
 			this.tui.requestRender();
@@ -111,7 +112,13 @@ export class QuestionnaireComponent implements Component {
 			this.tui.requestRender();
 			return;
 		}
-		this.answers[this.tab] = { questionIndex: this.tab, question: q.question, kind: "custom", answer: value.trim() || null };
+		const trimmed = value.trim();
+		if (!trimmed) {
+			this.customMode = false; // blank submit → back to options
+			this.tui.requestRender();
+			return;
+		}
+		this.answers[this.tab] = { questionIndex: this.tab, question: q.question, kind: "custom", answer: trimmed };
 		this.advance();
 	}
 
@@ -276,19 +283,23 @@ export class QuestionnaireComponent implements Component {
 			}
 			lines.push(pad(row("")));
 			// Pane for the focused option: full wrapped description + preview if present.
-			const focused = selected && selected.value !== TYPE_ROW_VALUE ? q.options.find((o) => o.label === selected.value) : undefined;
+			const focused = selected && !isTypeRow(selected.value) ? q.options.find((o) => o.label === selected.value) : undefined;
 			if (focused) {
 				lines.push(pad(bar()));
 				lines.push(pad(row(this.theme.fg("accent", "Description"))));
-				for (const line of wrapTextWithAnsi(focused.description, contentWidth - 2).slice(0, 8)) {
+				const descLines = wrapTextWithAnsi(focused.description, contentWidth - 2);
+				for (const line of descLines.slice(0, 8)) {
 					lines.push(pad(row(this.theme.fg("dim", line))));
 				}
+				if (descLines.length > 8) lines.push(pad(row(this.theme.fg("dim", `… +${descLines.length - 8} more lines`))));
 				if (focused.preview) {
 					lines.push(pad(row("")));
 					lines.push(pad(row(this.theme.fg("accent", "Preview"))));
-					for (const line of focused.preview.split("\n").slice(0, 8)) {
+					const previewLines = focused.preview.split("\n");
+					for (const line of previewLines.slice(0, 8)) {
 						lines.push(pad(row(this.theme.fg("dim", truncateToWidth(line, contentWidth - 2)))));
 					}
+					if (previewLines.length > 8) lines.push(pad(row(this.theme.fg("dim", `… +${previewLines.length - 8} more lines`))));
 				}
 				lines.push(pad(bar()));
 			}
